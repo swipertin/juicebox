@@ -213,7 +213,7 @@ async function testDB() {
     console.log("Result:", updatePostTagsResult);
 
     console.log("Calling getPostsByTagName with #happy");
-    const postWithHappy = await getPostsByTagName("#happy");
+    const postsWithHappy = await getPostsByTagName("#happy");
     console.log("Result:", postsWithHappy);
 
     console.log("Finished database tests!");
