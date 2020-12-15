@@ -85,12 +85,13 @@ async function updatePost(postId, fields = {}) {
 
   try {
     if (setString.length > 0) {
-      await client.query(`
-      UPDATE posts
-      SET ${setString}
-      WHERE id=${postId}
-      RETURNING *;
-      `,
+      await client.query(
+        `
+          UPDATE posts
+          SET ${setString}
+          WHERE id=${postId}
+          RETURNING *;
+        `,
         Object.values(fields)
       );
     }
@@ -136,26 +137,38 @@ async function getAllPosts() {
   }
 }
 
+async function getAllTags() {
+  try {
+    const { rows: tagIds } = await client.query(`
+    SELECT * 
+    FROM tags;
+    `);
+    
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function getPostById(postId) {
   try {
     const {
       rows: [post],
     } = await client.query(
       `
-SELECT * 
-FROM posts
-WHERE id=$1;
-`,
+      SELECT * 
+      FROM posts
+      WHERE id=$1;
+      `,
       [postId]
     );
 
     const { rows: tags } = await client.query(
       `
-SELECT tags.*
-FROM tags
-JOIN post_tags ON tags.id=post_tags."tagId"
-WHERE post_tags."postId"=$1;
-`,
+      SELECT tags.*
+      FROM tags
+      JOIN post_tags ON tags.id=post_tags."tagId"
+      WHERE post_tags."postId"=$1;
+      `,
       [postId]
     );
 
@@ -163,10 +176,10 @@ WHERE post_tags."postId"=$1;
       rows: [author],
     } = await client.query(
       `
-SELECT id, username, name, location
-FROM users
-WHERE id=$1;
-`,
+      SELECT id, username, name, location
+      FROM users
+      WHERE id=$1;
+      `,
       [post.authorId]
     );
 
@@ -232,17 +245,18 @@ async function getPostByUser(userId) {
 
 async function getPostsByTagName(tagName) {
   try {
-    const { rows: postIds } = await client.query(`
+    const { rows: postIds } = await client.query(
+      `
     SELECT posts.id
     FROM posts
     JOIN post_tags ON posts.id=post_tags."postId"
     JOIN tags ON tags.id=post_tags."tagId"
     WHERE tags.name=$1;
-    `, [tagName]);
+    `,
+      [tagName]
+    );
 
-    return await Promise.all(postIds.map(
-      post => getPostById(post.id)
-    ));
+    return await Promise.all(postIds.map((post) => getPostById(post.id)));
   } catch (error) {
     throw error;
   }
@@ -319,10 +333,11 @@ module.exports = {
   createPost,
   updatePost,
   getAllPosts,
+  getAllTags,
   getPostByUser,
   createPostTag,
   getPostById,
   addTagsToPost,
   createTags,
-  getPostsByTagName
+  getPostsByTagName,
 };
